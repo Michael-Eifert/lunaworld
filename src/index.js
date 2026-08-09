@@ -12,10 +12,11 @@ async function checkFoundryStatus() {
       headers: {
         "User-Agent": "lunaworld-status-check",
       },
+      cache: "no-store",
     });
 
     return {
-      active: response.status < 500,
+      active: response.status >= 200 && response.status < 400,
       status: response.status,
       checkedAt: new Date().toISOString(),
     };
