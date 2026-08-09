@@ -36,6 +36,65 @@
       .moon {
         font-size: 64px;
       }
+
+      .status-panel {
+        margin-top: 32px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: #d9def7;
+        font-size: 16px;
+      }
+
+      .status-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #8c93ad;
+        box-shadow: 0 0 16px rgba(140, 147, 173, 0.45);
+      }
+
+      .status-dot.active {
+        background: #2ee66b;
+        box-shadow: 0 0 18px rgba(46, 230, 107, 0.65);
+      }
+
+      .status-dot.inactive {
+        background: #ff4d5f;
+        box-shadow: 0 0 18px rgba(255, 77, 95, 0.6);
+      }
+
+      .foundry-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0 20px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.08);
+        color: #ffffff;
+        font-size: 15px;
+        font-weight: 700;
+        text-decoration: none;
+        transition:
+          background 160ms ease,
+          border-color 160ms ease,
+          transform 160ms ease;
+      }
+
+      .foundry-link:hover {
+        background: rgba(255, 255, 255, 0.14);
+        border-color: rgba(255, 255, 255, 0.42);
+        transform: translateY(-1px);
+      }
     </style>
   </head>
 
@@ -51,6 +110,48 @@
         The gates are currently closed.<br />
         Please return again later.
       </p>
+
+      <div class="status-panel">
+        <div class="status" aria-live="polite">
+          <span class="status-dot" id="status-dot" aria-hidden="true"></span>
+          <span id="status-text">Checking Foundry status...</span>
+        </div>
+
+        <a class="foundry-link" href="https://foundry.lunaworld.net/">
+          Open Foundry
+        </a>
+      </div>
     </div>
+
+    <script>
+      const statusDot = document.querySelector("#status-dot");
+      const statusText = document.querySelector("#status-text");
+
+      async function updateFoundryStatus() {
+        try {
+          const response = await fetch("/api/foundry-status", {
+            cache: "no-store",
+          });
+
+          if (!response.ok) {
+            throw new Error("Status request failed");
+          }
+
+          const status = await response.json();
+          statusDot.classList.toggle("active", status.active);
+          statusDot.classList.toggle("inactive", !status.active);
+          statusText.textContent = status.active
+            ? "Foundry is active"
+            : "Foundry is inactive";
+        } catch (error) {
+          statusDot.classList.remove("active");
+          statusDot.classList.add("inactive");
+          statusText.textContent = "Foundry is inactive";
+        }
+      }
+
+      updateFoundryStatus();
+      setInterval(updateFoundryStatus, 30000);
+    </script>
   </body>
 </html>
