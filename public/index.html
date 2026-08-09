@@ -9,6 +9,7 @@
       body {
         margin: 0;
         min-height: 100vh;
+        overflow: hidden;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -18,7 +19,48 @@
         text-align: center;
       }
 
+      .sky {
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      .stars {
+        position: absolute;
+        inset: 0 auto 0 -100vw;
+        width: 200vw;
+        background-image:
+          radial-gradient(circle, rgba(255, 255, 255, 0.88) 0 1px, transparent 1.5px),
+          radial-gradient(circle, rgba(180, 204, 255, 0.8) 0 1px, transparent 1.5px);
+        background-position:
+          0 0,
+          50px 80px;
+        background-size:
+          180px 140px,
+          240px 190px;
+        opacity: 0.46;
+        animation: drift-stars 72s linear infinite;
+      }
+
+      .clouds {
+        position: absolute;
+        inset: auto auto 8vh -100vw;
+        width: 200vw;
+        height: 36vh;
+        background:
+          radial-gradient(ellipse at 15% 68%, rgba(255, 255, 255, 0.11) 0 9%, transparent 25%),
+          radial-gradient(ellipse at 32% 78%, rgba(136, 151, 196, 0.17) 0 12%, transparent 30%),
+          radial-gradient(ellipse at 56% 72%, rgba(255, 255, 255, 0.1) 0 10%, transparent 27%),
+          radial-gradient(ellipse at 78% 82%, rgba(118, 132, 174, 0.16) 0 13%, transparent 32%);
+        filter: blur(10px);
+        opacity: 0.78;
+        animation: drift-clouds 96s linear infinite;
+      }
+
       .content {
+        position: relative;
+        z-index: 1;
         max-width: 600px;
         padding: 40px;
       }
@@ -35,6 +77,7 @@
 
       .moon {
         font-size: 64px;
+        filter: drop-shadow(0 0 24px rgba(255, 222, 116, 0.28));
       }
 
       .status-panel {
@@ -95,10 +138,51 @@
         border-color: rgba(255, 255, 255, 0.42);
         transform: translateY(-1px);
       }
+
+      .foundry-link.disabled {
+        cursor: not-allowed;
+        pointer-events: none;
+        border-color: rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.04);
+        color: rgba(255, 255, 255, 0.45);
+        transform: none;
+      }
+
+      @keyframes drift-stars {
+        from {
+          transform: translateX(0);
+        }
+
+        to {
+          transform: translateX(50%);
+        }
+      }
+
+      @keyframes drift-clouds {
+        from {
+          transform: translateX(0);
+        }
+
+        to {
+          transform: translateX(50%);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .stars,
+        .clouds {
+          animation: none;
+        }
+      }
     </style>
   </head>
 
   <body>
+    <div class="sky" aria-hidden="true">
+      <div class="stars"></div>
+      <div class="clouds"></div>
+    </div>
+
     <div class="content">
       <div class="moon">🌙</div>
 
@@ -116,7 +200,13 @@
           <span id="status-text">Checking LunaWorld Foundry status...</span>
         </div>
 
-        <a class="foundry-link" href="https://foundry.lunaworld.net/">
+        <a
+          class="foundry-link disabled"
+          href="https://foundry.lunaworld.net/"
+          id="foundry-link"
+          aria-disabled="true"
+          tabindex="-1"
+        >
           Enter LunaWorld VTT
         </a>
       </div>
@@ -125,6 +215,13 @@
     <script>
       const statusDot = document.querySelector("#status-dot");
       const statusText = document.querySelector("#status-text");
+      const foundryLink = document.querySelector("#foundry-link");
+
+      function setFoundryAvailability(isActive) {
+        foundryLink.classList.toggle("disabled", !isActive);
+        foundryLink.setAttribute("aria-disabled", String(!isActive));
+        foundryLink.tabIndex = isActive ? 0 : -1;
+      }
 
       async function updateFoundryStatus() {
         try {
@@ -139,12 +236,14 @@
           const status = await response.json();
           statusDot.classList.toggle("active", status.active);
           statusDot.classList.toggle("inactive", !status.active);
+          setFoundryAvailability(status.active);
           statusText.textContent = status.active
             ? "LunaWorld Foundry is active"
             : "LunaWorld Foundry is inactive";
         } catch (error) {
           statusDot.classList.remove("active");
           statusDot.classList.add("inactive");
+          setFoundryAvailability(false);
           statusText.textContent = "LunaWorld Foundry is inactive";
         }
       }
