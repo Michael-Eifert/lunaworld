@@ -107,18 +107,17 @@
       <p>Welcome, traveler.</p>
 
       <p>
-        The gates are currently closed.<br />
-        Please return again later.
+        Check whether the LunaWorld Foundry instance is online before entering.
       </p>
 
       <div class="status-panel">
         <div class="status" aria-live="polite">
           <span class="status-dot" id="status-dot" aria-hidden="true"></span>
-          <span id="status-text">Checking Foundry status...</span>
+          <span id="status-text">Checking LunaWorld Foundry status...</span>
         </div>
 
         <a class="foundry-link" href="https://foundry.lunaworld.net/">
-          Open Foundry
+          Enter LunaWorld VTT
         </a>
       </div>
     </div>
@@ -141,12 +140,12 @@
           statusDot.classList.toggle("active", status.active);
           statusDot.classList.toggle("inactive", !status.active);
           statusText.textContent = status.active
-            ? "Foundry is active"
-            : "Foundry is inactive";
+            ? "LunaWorld Foundry is active"
+            : "LunaWorld Foundry is inactive";
         } catch (error) {
           statusDot.classList.remove("active");
           statusDot.classList.add("inactive");
-          statusText.textContent = "Foundry is inactive";
+          statusText.textContent = "LunaWorld Foundry is inactive";
         }
       }
 
