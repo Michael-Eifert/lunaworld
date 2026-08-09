@@ -9,7 +9,7 @@
       body {
         margin: 0;
         min-height: 100vh;
-        overflow: hidden;
+        overflow-x: hidden;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -114,7 +114,7 @@
         box-shadow: 0 0 18px rgba(255, 77, 95, 0.6);
       }
 
-      .foundry-link {
+      .service-link {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -133,13 +133,13 @@
           transform 160ms ease;
       }
 
-      .foundry-link:hover {
+      .service-link:hover {
         background: rgba(255, 255, 255, 0.14);
         border-color: rgba(255, 255, 255, 0.42);
         transform: translateY(-1px);
       }
 
-      .foundry-link.disabled {
+      .service-link.disabled {
         cursor: not-allowed;
         pointer-events: none;
         border-color: rgba(255, 255, 255, 0.12);
@@ -201,7 +201,7 @@
         </div>
 
         <a
-          class="foundry-link disabled"
+          class="service-link disabled"
           href="https://foundry.lunaworld.net/"
           id="foundry-link"
           aria-disabled="true"
@@ -210,17 +210,49 @@
           Enter LunaWorld VTT
         </a>
       </div>
+
+      <div class="status-panel">
+        <div class="status" aria-live="polite">
+          <span
+            class="status-dot"
+            id="mystics-adventure-status-dot"
+            aria-hidden="true"
+          ></span>
+          <span id="mystics-adventure-status-text">
+            Checking Mystics Adventure status...
+          </span>
+        </div>
+
+        <a
+          class="service-link disabled"
+          href="https://mystics-adventure.lunaworld.net/"
+          id="mystics-adventure-link"
+          aria-disabled="true"
+          tabindex="-1"
+        >
+          Play Mystics Adventure
+        </a>
+      </div>
     </div>
 
     <script>
       const statusDot = document.querySelector("#status-dot");
       const statusText = document.querySelector("#status-text");
       const foundryLink = document.querySelector("#foundry-link");
+      const mysticsAdventureStatusDot = document.querySelector(
+        "#mystics-adventure-status-dot",
+      );
+      const mysticsAdventureStatusText = document.querySelector(
+        "#mystics-adventure-status-text",
+      );
+      const mysticsAdventureLink = document.querySelector(
+        "#mystics-adventure-link",
+      );
 
-      function setFoundryAvailability(isActive) {
-        foundryLink.classList.toggle("disabled", !isActive);
-        foundryLink.setAttribute("aria-disabled", String(!isActive));
-        foundryLink.tabIndex = isActive ? 0 : -1;
+      function setServiceAvailability(link, isActive) {
+        link.classList.toggle("disabled", !isActive);
+        link.setAttribute("aria-disabled", String(!isActive));
+        link.tabIndex = isActive ? 0 : -1;
       }
 
       async function updateFoundryStatus() {
@@ -236,20 +268,53 @@
           const status = await response.json();
           statusDot.classList.toggle("active", status.active);
           statusDot.classList.toggle("inactive", !status.active);
-          setFoundryAvailability(status.active);
+          setServiceAvailability(foundryLink, status.active);
           statusText.textContent = status.active
             ? "LunaWorld Foundry is active"
             : "LunaWorld Foundry is inactive";
         } catch (error) {
           statusDot.classList.remove("active");
           statusDot.classList.add("inactive");
-          setFoundryAvailability(false);
+          setServiceAvailability(foundryLink, false);
           statusText.textContent = "LunaWorld Foundry is inactive";
         }
       }
 
+      async function updateMysticsAdventureStatus() {
+        try {
+          const response = await fetch("/api/mystics-adventure-status", {
+            cache: "no-store",
+          });
+
+          if (!response.ok) {
+            throw new Error("Status request failed");
+          }
+
+          const status = await response.json();
+          mysticsAdventureStatusDot.classList.toggle("active", status.active);
+          mysticsAdventureStatusDot.classList.toggle(
+            "inactive",
+            !status.active,
+          );
+          setServiceAvailability(mysticsAdventureLink, status.active);
+          mysticsAdventureStatusText.textContent = status.active
+            ? "Mystics Adventure is active"
+            : "Mystics Adventure is inactive";
+        } catch (error) {
+          mysticsAdventureStatusDot.classList.remove("active");
+          mysticsAdventureStatusDot.classList.add("inactive");
+          setServiceAvailability(mysticsAdventureLink, false);
+          mysticsAdventureStatusText.textContent =
+            "Mystics Adventure is inactive";
+        }
+      }
+
       updateFoundryStatus();
-      setInterval(updateFoundryStatus, 30000);
+      updateMysticsAdventureStatus();
+      setInterval(() => {
+        updateFoundryStatus();
+        updateMysticsAdventureStatus();
+      }, 30000);
     </script>
   </body>
 </html>

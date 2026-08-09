@@ -1,11 +1,12 @@
 const FOUNDRY_URL = "https://foundry.lunaworld.net/";
+const MYSTICS_ADVENTURE_URL = "https://mystics-adventure.lunaworld.net/";
 
-async function checkFoundryStatus() {
+async function checkServiceStatus(serviceUrl) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000);
 
   try {
-    const response = await fetch(FOUNDRY_URL, {
+    const response = await fetch(serviceUrl, {
       method: "GET",
       redirect: "manual",
       signal: controller.signal,
@@ -37,7 +38,17 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === "/api/foundry-status") {
-      const status = await checkFoundryStatus();
+      const status = await checkServiceStatus(FOUNDRY_URL);
+
+      return Response.json(status, {
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      });
+    }
+
+    if (url.pathname === "/api/mystics-adventure-status") {
+      const status = await checkServiceStatus(MYSTICS_ADVENTURE_URL);
 
       return Response.json(status, {
         headers: {
