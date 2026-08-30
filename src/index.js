@@ -1,5 +1,6 @@
 const FOUNDRY_URL = "https://foundry.lunaworld.net/";
 const MYSTICS_ADVENTURE_URL = "https://mystics-adventure.lunaworld.net/";
+const GUILD_MANAGER_URL = "https://guild-manager.lunaworld.net/";
 
 async function checkServiceStatus(serviceUrl) {
   const controller = new AbortController();
@@ -49,6 +50,16 @@ export default {
 
     if (url.pathname === "/api/mystics-adventure-status") {
       const status = await checkServiceStatus(MYSTICS_ADVENTURE_URL);
+
+      return Response.json(status, {
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      });
+    }
+
+    if (url.pathname === "/api/guild-manager-status") {
+      const status = await checkServiceStatus(GUILD_MANAGER_URL);
 
       return Response.json(status, {
         headers: {

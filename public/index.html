@@ -211,6 +211,7 @@
         </a>
       </div>
 
+      <!--
       <div class="status-panel">
         <div class="status" aria-live="polite">
           <span
@@ -233,12 +234,45 @@
           Play Mystics Adventure
         </a>
       </div>
+      -->
+
+      <div class="status-panel">
+        <div class="status" aria-live="polite">
+          <span
+            class="status-dot"
+            id="guild-manager-status-dot"
+            aria-hidden="true"
+          ></span>
+          <span id="guild-manager-status-text">
+            Checking Guild Manager status...
+          </span>
+        </div>
+
+        <a
+          class="service-link disabled"
+          href="https://guild-manager.lunaworld.net/"
+          id="guild-manager-link"
+          aria-disabled="true"
+          tabindex="-1"
+        >
+          Open Guild Manager
+        </a>
+      </div>
     </div>
 
     <script>
       const statusDot = document.querySelector("#status-dot");
       const statusText = document.querySelector("#status-text");
       const foundryLink = document.querySelector("#foundry-link");
+      const guildManagerStatusDot = document.querySelector(
+        "#guild-manager-status-dot",
+      );
+      const guildManagerStatusText = document.querySelector(
+        "#guild-manager-status-text",
+      );
+      const guildManagerLink = document.querySelector("#guild-manager-link");
+
+      /*
       const mysticsAdventureStatusDot = document.querySelector(
         "#mystics-adventure-status-dot",
       );
@@ -248,6 +282,7 @@
       const mysticsAdventureLink = document.querySelector(
         "#mystics-adventure-link",
       );
+      */
 
       function setServiceAvailability(link, isActive) {
         link.classList.toggle("disabled", !isActive);
@@ -280,6 +315,7 @@
         }
       }
 
+      /*
       async function updateMysticsAdventureStatus() {
         try {
           const response = await fetch("/api/mystics-adventure-status", {
@@ -308,12 +344,40 @@
             "Mystics Adventure is inactive";
         }
       }
+      */
+
+      async function updateGuildManagerStatus() {
+        try {
+          const response = await fetch("/api/guild-manager-status", {
+            cache: "no-store",
+          });
+
+          if (!response.ok) {
+            throw new Error("Status request failed");
+          }
+
+          const status = await response.json();
+          guildManagerStatusDot.classList.toggle("active", status.active);
+          guildManagerStatusDot.classList.toggle("inactive", !status.active);
+          setServiceAvailability(guildManagerLink, status.active);
+          guildManagerStatusText.textContent = status.active
+            ? "Guild Manager is active"
+            : "Guild Manager is inactive";
+        } catch (error) {
+          guildManagerStatusDot.classList.remove("active");
+          guildManagerStatusDot.classList.add("inactive");
+          setServiceAvailability(guildManagerLink, false);
+          guildManagerStatusText.textContent = "Guild Manager is inactive";
+        }
+      }
 
       updateFoundryStatus();
-      updateMysticsAdventureStatus();
+      // updateMysticsAdventureStatus();
+      updateGuildManagerStatus();
       setInterval(() => {
         updateFoundryStatus();
-        updateMysticsAdventureStatus();
+        // updateMysticsAdventureStatus();
+        updateGuildManagerStatus();
       }, 30000);
     </script>
   </body>
